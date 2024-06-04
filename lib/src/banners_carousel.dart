@@ -1,9 +1,9 @@
+import 'dart:async';
+
 import 'package:banner_carousel/banner_carousel.dart';
 import 'package:flutter/material.dart';
 
-import 'banner_model.dart';
 import 'banner_widget.dart';
-import 'indicator_model.dart';
 import 'indicators_widget.dart';
 
 /// Creates a horizontal scrollable list that works from an explicit
@@ -92,7 +92,11 @@ class BannerCarousel extends StatefulWidget {
   final double spaceBetween;
 
   /// Margin between the banner
-  final PageController? pageController;
+  // final PageController? pageController;
+
+  final bool autoPlay;
+
+  final Duration autoPlayInterval;
 
   /// ```dart
   ///  BannersCarousel(banners: BannerImages.listBanners)
@@ -116,7 +120,9 @@ class BannerCarousel extends StatefulWidget {
     this.customizedIndicators = _indicatorModel,
     this.customizedBanners,
     this.spaceBetween = 0,
-    this.pageController,
+    this.autoPlay = false,
+    this.autoPlayInterval = const Duration(seconds: 3),
+    // this.pageController,
   })  : assert(banners != null || customizedBanners != null,
             'banners or customizedBanners need to be implemented'),
         assert(
@@ -145,7 +151,9 @@ class BannerCarousel extends StatefulWidget {
     this.animation = true,
     this.customizedBanners,
     this.customizedIndicators = _indicatorModel,
-    this.pageController,
+    // this.pageController,
+    this.autoPlay = false,
+    this.autoPlayInterval = const Duration(seconds: 3),
   })  : this.width = double.maxFinite,
         this.spaceBetween = 0.0,
         this.margin = EdgeInsets.zero,
@@ -163,11 +171,36 @@ class BannerCarousel extends StatefulWidget {
 
 class _BannerCarouselState extends State<BannerCarousel> {
   late int _page;
+  Timer? _autoPlayTimer;
+  late PageController _pageController;
 
   @override
   void initState() {
     _page = widget.initialPage;
+    _pageController = PageController(
+        initialPage: widget.initialPage,
+        viewportFraction: widget.viewportFraction);
+    if (widget.autoPlay) {
+      _autoPlayTimer = Timer.periodic(widget.autoPlayInterval, (_) {
+        if (_page >= _banners.length - 1) {
+          _page = 0;
+        } else {
+          _page++;
+        }
+        _pageController.animateToPage(
+          _page,
+          duration: Duration(milliseconds: 350),
+          curve: Curves.easeIn,
+        );
+      });
+    }
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _autoPlayTimer?.cancel();
+    super.dispose();
   }
 
   /// Shadow Banner
@@ -222,10 +255,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
             decoration: _boxDecoration,
             height: widget.height,
             child: PageView(
-              controller: widget.pageController ??
-                  PageController(
-                      initialPage: widget.initialPage,
-                      viewportFraction: widget.viewportFraction),
+              controller: _pageController,
               onPageChanged: (index) => _onChangePage(index),
               children: _listBanners,
             ),
