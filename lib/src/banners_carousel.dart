@@ -176,16 +176,26 @@ class _BannerCarouselState extends State<BannerCarousel> {
 
   @override
   void initState() {
-    _page = widget.initialPage;
+    _page = 1;
     _pageController = PageController(
-        initialPage: widget.autoPlay ? 1 : widget.initialPage,
-        viewportFraction: widget.viewportFraction);
+        initialPage: _page, viewportFraction: widget.viewportFraction);
+    autoScroll();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _autoPlayTimer?.cancel();
+    super.dispose();
+  }
+
+  void autoScroll() {
     if (widget.autoPlay) {
       _autoPlayTimer = Timer.periodic(widget.autoPlayInterval, (_) {
-        if (_page >= _banners.length - 1) {
-          _page = 0;
-        } else {
-          _page++;
+        _page++;
+        if (_page >= _banners.length) {
+          // When it scrolls to the last image, reset it to the first image
+          _page = 1;
         }
         _pageController.animateToPage(
           _page,
@@ -194,13 +204,6 @@ class _BannerCarouselState extends State<BannerCarousel> {
         );
       });
     }
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _autoPlayTimer?.cancel();
-    super.dispose();
   }
 
   /// Shadow Banner
@@ -264,13 +267,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
               onPageChanged: (index) {
                 if (widget.autoPlay) {
                   _autoPlayTimer?.cancel();
-                  _autoPlayTimer =
-                      Timer.periodic(widget.autoPlayInterval, (timer) {
-                    _pageController.nextPage(
-                      duration: Duration(milliseconds: 500),
-                      curve: Curves.easeIn,
-                    );
-                  });
+                  autoScroll();
                 }
                 _onChangePage(index);
               },
@@ -308,9 +305,24 @@ class _BannerCarouselState extends State<BannerCarousel> {
   /// Method for when to change the page
   /// returning an integer value
   void _onChangePage(int index) {
-    if (widget.onPageChanged != null) {
-      widget.onPageChanged!(index);
+    int indicatorIndex;
+    //  When it scrolls to the first image(really the last one in the list), set indicator to the last one
+    if (index == 0) {
+      indicatorIndex = _banners.length - 1;
     }
-    setState(() => _page = index);
+    // When it scrolls to the last image(really the first one in the list), set indicator to the first one
+    else if (index == _banners.length - 1) {
+      indicatorIndex = 0;
+    } else {
+      indicatorIndex = index - 1;
+    }
+
+    if (widget.onPageChanged != null) {
+      widget.onPageChanged!(indicatorIndex);
+    }
+
+    setState(() {
+      _page = indicatorIndex;
+    });
   }
 }
