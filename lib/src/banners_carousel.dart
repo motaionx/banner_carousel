@@ -241,7 +241,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
 
   List<Widget> get rowIndicator {
     // This is the original list length that you want to display indicators.
-    int originalLength = _banners.length - 2;
+    int originalLength = _imageList.length - 2;
 
     return List<Widget>.generate(originalLength, (index) {
       // Here minus 1 because the first added image on the list.
