@@ -193,7 +193,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
     if (widget.autoPlay) {
       _autoPlayTimer = Timer.periodic(widget.autoPlayInterval, (_) {
         _page++;
-        if (_page >= _banners.length) {
+        if (_page >= _imageList.length - 1) {
           // When it scrolls to the last image, reset it to the first image
           _page = 1;
         }
@@ -308,11 +308,11 @@ class _BannerCarouselState extends State<BannerCarousel> {
     int indicatorIndex;
     //  When it scrolls to the first image(really the last one in the list), set indicator to the last one
     if (index == 0) {
-      indicatorIndex = _banners.length - 1;
+      indicatorIndex = _imageList.length - 1;
     }
     // When it scrolls to the last image(really the first one in the list), set indicator to the first one
-    else if (index == _banners.length - 1) {
-      indicatorIndex = 0;
+    else if (index == _imageList.length - 1) {
+      indicatorIndex = 1;
     } else {
       indicatorIndex = index - 1;
     }
