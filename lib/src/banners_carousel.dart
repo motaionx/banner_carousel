@@ -178,7 +178,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
   void initState() {
     _page = widget.initialPage;
     _pageController = PageController(
-        initialPage: widget.initialPage,
+        initialPage: widget.autoPlay ? 1 : widget.initialPage,
         viewportFraction: widget.viewportFraction);
     if (widget.autoPlay) {
       _autoPlayTimer = Timer.periodic(widget.autoPlayInterval, (_) {
@@ -189,7 +189,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
         }
         _pageController.animateToPage(
           _page,
-          duration: Duration(milliseconds: 350),
+          duration: Duration(milliseconds: 500),
           curve: Curves.easeIn,
         );
       });
@@ -213,19 +213,24 @@ class _BannerCarouselState extends State<BannerCarousel> {
 
   List<dynamic> get _banners => widget.customizedBanners ?? widget.banners!;
 
-  List<Widget> get _listBanners =>
-      widget.customizedBanners ??
-      widget.banners!
-          .map((banner) => BannerWidget(
-                key: Key("Banner${banner.id}"),
-                bannerModel: banner,
-                spaceBetween: widget.spaceBetween,
-                onTap: widget.onTap != null
-                    ? () => widget.onTap!(banner.id)
-                    : () => print("Double Tap Banner ${banner.id}"),
-                borderRadius: widget.borderRadius,
-              ))
-          .toList();
+  List<Widget> get _listBanners => widget.customizedBanners ?? _imageList;
+
+  List<Widget> get _imageList {
+    List<Widget> list = widget.banners!
+        .map((banner) => BannerWidget(
+              key: Key("Banner${banner.id}"),
+              bannerModel: banner,
+              spaceBetween: widget.spaceBetween,
+              onTap: widget.onTap != null
+                  ? () => widget.onTap!(banner.id)
+                  : () => print("Double Tap Banner ${banner.id}"),
+              borderRadius: widget.borderRadius,
+            ))
+        .toList();
+    return [list.last]
+      ..addAll(list)
+      ..add(list.first);
+  }
 
   List<Widget> get rowIndicator => _banners
       .asMap()
@@ -256,7 +261,19 @@ class _BannerCarouselState extends State<BannerCarousel> {
             height: widget.height,
             child: PageView(
               controller: _pageController,
-              onPageChanged: (index) => _onChangePage(index),
+              onPageChanged: (index) {
+                if (widget.autoPlay) {
+                  _autoPlayTimer?.cancel();
+                  _autoPlayTimer =
+                      Timer.periodic(widget.autoPlayInterval, (timer) {
+                    _pageController.nextPage(
+                      duration: Duration(milliseconds: 500),
+                      curve: Curves.easeIn,
+                    );
+                  });
+                }
+                _onChangePage(index);
+              },
               children: _listBanners,
             ),
           ),

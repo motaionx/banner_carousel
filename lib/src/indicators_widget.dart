@@ -15,7 +15,7 @@ class CarouselIndicatorWidget extends StatelessWidget {
     this.active = false,
     this.animation = true,
     required this.color,
-    this.dotBorderRadius = 8.0,
+    this.dotBorderRadius = 0.5,
     required this.sizeIndicator,
   }) : super(key: key);
 

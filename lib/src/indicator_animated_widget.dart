@@ -8,7 +8,7 @@ class IndicatorAnimatedWidget extends StatelessWidget {
     required double height,
     required Color color,
     required this.dotBorderRadius,
-  })   : _padding = padding,
+  })  : _padding = padding,
         _width = width,
         _height = height,
         _color = color,
@@ -29,6 +29,13 @@ class IndicatorAnimatedWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: _color,
         borderRadius: BorderRadius.circular(dotBorderRadius),
+        boxShadow: [
+          BoxShadow(
+              offset: Offset(0, 3),
+              blurRadius: 4.0, //模糊半径
+              color: Colors.black.withOpacity(0.30) //阴影颜色与透明度
+              )
+        ],
       ),
       duration: Duration(milliseconds: 800),
       curve: Curves.fastOutSlowIn,
