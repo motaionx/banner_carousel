@@ -192,10 +192,14 @@ class _BannerCarouselState extends State<BannerCarousel> {
   void autoScroll() {
     if (widget.autoPlay) {
       _autoPlayTimer = Timer.periodic(widget.autoPlayInterval, (_) {
-        _page++;
-        if (_page >= _imageList.length - 1) {
-          // When it scrolls to the last image, reset it to the first image
-          _page = 1;
+        if (_page == 0) {
+          _page = _imageList.length - 1;
+        }
+        // When it scrolls to the last image(really the first one in the list), set indicator to the first one
+        else if (_page == _imageList.length - 1) {
+          _page = 0;
+        } else {
+          _page++;
         }
         _pageController.animateToPage(
           _page,
@@ -235,17 +239,28 @@ class _BannerCarouselState extends State<BannerCarousel> {
       ..add(list.first);
   }
 
-  List<Widget> get rowIndicator => _banners
-      .asMap()
-      .entries
-      .map((e) => CarouselIndicatorWidget(
-            key: Key("Indicator${e.key}"),
-            active: _page == e.key,
-            color: _page == e.key ? _activeColor : _disableColor,
-            animation: widget.animation,
-            sizeIndicator: widget.customizedIndicators,
-          ))
-      .toList();
+  List<Widget> get rowIndicator {
+    // This is the original list length that you want to display indicators.
+    int originalLength = _banners.length - 2;
+
+    return List<Widget>.generate(originalLength, (index) {
+      // Here minus 1 because the first added image on the list.
+      int currentValue = _page - 1;
+      if (currentValue < 0) {
+        currentValue = originalLength - 1;
+      } else if (currentValue >= originalLength) {
+        currentValue = 0;
+      }
+      bool isActive = index == currentValue;
+      return CarouselIndicatorWidget(
+        key: Key('Indicator$index'),
+        active: isActive,
+        color: isActive ? _activeColor : _disableColor,
+        animation: widget.animation,
+        sizeIndicator: widget.customizedIndicators,
+      );
+    });
+  }
 
   double get _totalHeigth => widget.indicatorBottom && widget.showIndicator
       ? widget.height + widget.customizedIndicators.heightExpanded + 15
