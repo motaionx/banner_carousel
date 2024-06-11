@@ -312,7 +312,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
     }
     // When it scrolls to the last image(really the first one in the list), set indicator to the first one
     else if (index == _imageList.length - 1) {
-      indicatorIndex = 1;
+      indicatorIndex = 0;
     } else {
       indicatorIndex = index - 1;
     }
